@@ -23,14 +23,14 @@ use \OCP\IUserManager;
 use \OCP\IUserSession;
 use \OCP\Security\ISecureRandom;
 use OCP\AppFramework\Http\RedirectResponse;
-use OC\Authentication\Token\IProvider;
+use OCA\UserOidc\OpenIDConnectClient;
 
 class AuthController extends Controller {
 
 
 	private $userId;
 
-	public function __construct($AppName, IRequest $request, IConfig $config, ILogger $logger, IURLGenerator $urlgenerator, IUserManager $usermanager, ISecureRandom $securerandom, IUserSession $usersession, ISession $session){
+	public function __construct($AppName, IRequest $request, IConfig $config, ILogger $logger, IURLGenerator $urlgenerator, IUserManager $usermanager, ISecureRandom $securerandom, IUserSession $usersession, ISession $session, OpenIDConnectClient $oidc){
 		parent::__construct($AppName, $request);
         $this->config = $config;
         $this->log = $logger;
@@ -39,6 +39,7 @@ class AuthController extends Controller {
         $this->securerandom = $securerandom;
         $this->usersession = $usersession;
         $this->session = $session;
+        $this->oidc = $oidc;
 	}
 
     /**
@@ -47,17 +48,17 @@ class AuthController extends Controller {
      * @UseSession
      */
     public function login($provider) {
+        $this->oidc->setProvider($provider);
         $oidc_config = $this->config->getSystemValue('openid_connect')[$provider];
-        $oidc = new \OpenIDConnectClient($oidc_config['provider'], $oidc_config['client_id'], $oidc_config['client_secret']);
-        $oidc->addScope($oidc_config['scopes']);
+        $this->oidc->addScope($oidc_config['scopes']);
         $redirectUrl = $this->urlgenerator->linkToRouteAbsolute('useroidc.auth.login', ['provider' => $provider]);
         $this->log->debug('Using redirectUrl ' . $redirectUrl);
-        $oidc->setRedirectUrl($redirectUrl);
-        $oidc->authenticate();
+        $this->oidc->setRedirectUrl($redirectUrl);
+        $this->oidc->authenticate();
 
-        $email = $oidc->requestUserInfo('email');
-        $name = $oidc->requestUserInfo('name');
-        $user_id = $provider . '__' . $oidc->requestUserInfo('sub');
+        $email = $this->oidc->requestUserInfo('email');
+        $name = $this->oidc->requestUserInfo('name');
+        $user_id = $provider . '__' . $this->oidc->requestUserInfo('sub');
 
         $user = $this->usermanager->get($user_id);
         if(!$user) {
@@ -66,7 +67,7 @@ class AuthController extends Controller {
         if(!$user) {
             return new RedirectResponse('/');
         }
-        $this->session['oidc_access_token'] = $oidc->getAccessToken();
+        $this->session['oidc_access_token'] = $this->oidc->getAccessToken();
         $this->doLogin($user, $user_id);
         return new RedirectResponse('/');
 
