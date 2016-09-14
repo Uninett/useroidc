@@ -14,6 +14,7 @@ namespace OCA\UserOidc\Controller;
 use OCP\IRequest;
 use OCP\IConfig;
 use OCP\ILogger;
+use OCP\ISession;
 use OCP\AppFramework\Http\TemplateResponse;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\AppFramework\Controller;
@@ -29,7 +30,7 @@ class AuthController extends Controller {
 
 	private $userId;
 
-	public function __construct($AppName, IRequest $request, IConfig $config, ILogger $logger, IURLGenerator $urlgenerator, IUserManager $usermanager, ISecureRandom $securerandom, IUserSession $usersession){
+	public function __construct($AppName, IRequest $request, IConfig $config, ILogger $logger, IURLGenerator $urlgenerator, IUserManager $usermanager, ISecureRandom $securerandom, IUserSession $usersession, ISession $session){
 		parent::__construct($AppName, $request);
         $this->config = $config;
         $this->log = $logger;
@@ -37,6 +38,7 @@ class AuthController extends Controller {
         $this->usermanager = $usermanager;
         $this->securerandom = $securerandom;
         $this->usersession = $usersession;
+        $this->session = $session;
 	}
 
 	/**
@@ -77,6 +79,7 @@ class AuthController extends Controller {
         if(!$user) {
             return new RedirectResponse('/');
         }
+        $this->session['oidc_access_token'] = $oidc->getAccessToken();
         $this->doLogin($user, $user_id);
         return new RedirectResponse('/');
 
