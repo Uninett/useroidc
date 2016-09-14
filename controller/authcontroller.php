@@ -72,14 +72,6 @@ class AuthController extends Controller {
 
     }
 
-	/**
-	 * Simply method that posts back the payload of the request
-	 * @NoAdminRequired
-	 */
-	public function logout() {
-		return new DataResponse(['echo' => $echo]);
-	}
-
     private function doLogin($user) {
         $this->usersession->getSession()->regenerateId();
         $this->usersession->createSessionToken($this->request, $user->getUID(), $user->getUID());

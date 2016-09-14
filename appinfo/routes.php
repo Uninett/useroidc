@@ -21,6 +21,5 @@ return [
     'routes' => [
 	   ['name' => 'auth#status', 'url' => '/status', 'verb' => 'GET'],
 	   ['name' => 'auth#login', 'url' => '/login/{provider}', 'verb' => 'GET'],
-	   ['name' => 'auth#logout', 'url' => '/logout', 'verb' => 'POST'],
     ]
 ];
