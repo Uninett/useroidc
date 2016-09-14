@@ -21,6 +21,13 @@ Configure your openid connect providers in config.php like this:
   ],
 ```
 
+If your owncloud install lives at https://oc.example.com/index.php and
+the key for your provider in the config file is `google` you should
+register `https://oc.example.com/index.php/apps/useroidc/login/google`
+as redirect url at your provider.
+
+If your want to add additional business logic, for instance limiting who can access this owncloud install you can create a new app and add a hook for the \OC\User postLogin hook. The access token associated with this login is available in the session at `oidc_access_token` at this point. Reject the login by calling `usersession::logout()` at this point.
+
 ## Building the app
 
 The app can be built by using the provided Makefile by running:
