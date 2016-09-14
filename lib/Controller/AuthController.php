@@ -52,7 +52,7 @@ class AuthController extends Controller {
         $oidc_config = $this->config->getSystemValue('openid_connect')[$provider];
         $this->oidc->addScope($oidc_config['scopes']);
         $redirectUrl = $this->urlgenerator->linkToRouteAbsolute('useroidc.auth.login', ['provider' => $provider]);
-        $this->log->debug('Using redirectUrl ' . $redirectUrl);
+        $this->log->debug('Using redirectUrl ' . $redirectUrl, ['app' => $this->appName]);
         $this->oidc->setRedirectUrl($redirectUrl);
         $this->oidc->authenticate();
 
@@ -77,7 +77,7 @@ class AuthController extends Controller {
         $this->usersession->getSession()->regenerateId();
         $this->usersession->createSessionToken($this->request, $user->getUID(), $user->getUID());
         if ($this->usersession->login($user->getUID(), $this->usersession->getSession()->getId())) {
-            $this->log->debug('login successful');
+            $this->log->debug('login successful', ['app' => $this->appName]);
             $this->usersession->createSessionToken($this->request, $user->getUID(), $user->getUID());
             if ($this->usersession->isLoggedIn()) {
             }
@@ -87,11 +87,11 @@ class AuthController extends Controller {
 
     private function createUser($uid, $name, $email) {
         if (preg_match( '/[^a-zA-Z0-9 _\.@\-]/', $uid)) {
-            $this->log->debug('Invalid username "'.$uid.'", allowed chars "a-zA-Z0-9" and "_.@-" ');
+            $this->log->debug('Invalid username "'.$uid.'", allowed chars "a-zA-Z0-9" and "_.@-" ', ['app' => $this->appName]);
             return false;
         } else {
             $random_password = $this->securerandom->generate(64);
-            $this->log->debug('Creating new user: '.$uid);
+            $this->log->debug('Creating new user: '.$uid, ['app' => $this->appName]);
             $user = $this->usermanager->createUser($uid, $random_password);
             $user->setEMailAddress($email);
             $user->setDisplayName($name);
