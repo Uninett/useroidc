@@ -12,6 +12,7 @@
 namespace OCA\UserOidc\AppInfo;
 
 use OCP\AppFramework\App;
+use OC_App;
 
 require_once __DIR__ . '/autoload.php';
 
@@ -41,3 +42,9 @@ $container->query('OCP\INavigationManager')->add(function () use ($container) {
 		'name' => $l10n->t('User Oidc'),
 	];
 });
+
+$urlGenerator = $container->query('OCP\IURLGenerator');
+OC_APP::registerLogIn(array(
+    'href' => $urlGenerator->linkToRoute('useroidc.auth.login'),
+    'name' => 'OpenID Connect',
+));
