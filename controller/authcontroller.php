@@ -57,22 +57,25 @@ class AuthController extends Controller {
      * @NoCSRFRequired
      * @UseSession
      */
-    public function login() {
-		$oidc_config = $this->config->getSystemValue('openid_connect');
+    public function login($provider) {
+        $oidc_config = $this->config->getSystemValue('openid_connect')[$provider];
         $oidc = new \OpenIDConnectClient($oidc_config['provider'], $oidc_config['client_id'], $oidc_config['client_secret']);
         $oidc->addScope($oidc_config['scopes']);
-        $redirectUrl = $this->urlgenerator->linkToRouteAbsolute('useroidc.auth.login');
+        $redirectUrl = $this->urlgenerator->linkToRouteAbsolute('useroidc.auth.login', ['provider' => $provider]);
         $this->log->debug('Using redirectUrl ' . $redirectUrl);
         $oidc->setRedirectUrl($redirectUrl);
         $oidc->authenticate();
 
         $email = $oidc->requestUserInfo('email');
         $name = $oidc->requestUserInfo('name');
-        $user_id = $oidc->requestUserInfo('sub');
+        $user_id = $provider . '__' . $oidc->requestUserInfo('sub');
 
         $user = $this->usermanager->get($user_id);
         if(!$user) {
             $user = $this->createUser($user_id, $name, $email);
+        }
+        if(!$user) {
+            return new RedirectResponse('/');
         }
         $this->doLogin($user, $user_id);
         return new RedirectResponse('/');
@@ -101,7 +104,7 @@ class AuthController extends Controller {
 
     private function createUser($uid, $name, $email) {
         if (preg_match( '/[^a-zA-Z0-9 _\.@\-]/', $uid)) {
-            $this->log-debug('Invalid username "'.$uid.'", allowed chars "a-zA-Z0-9" and "_.@-" ');
+            $this->log->debug('Invalid username "'.$uid.'", allowed chars "a-zA-Z0-9" and "_.@-" ');
             return false;
         } else {
             $random_password = $this->securerandom->getMediumStrengthGenerator()->generate(64);

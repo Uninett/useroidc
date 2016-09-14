@@ -44,7 +44,10 @@ $container->query('OCP\INavigationManager')->add(function () use ($container) {
 });
 
 $urlGenerator = $container->query('OCP\IURLGenerator');
-OC_APP::registerLogIn(array(
-    'href' => $urlGenerator->linkToRoute('useroidc.auth.login'),
-    'name' => 'OpenID Connect',
-));
+$config = $container->query('ServerContainer')->getConfig();
+foreach ($config->getSystemValue('openid_connect') as $id => $data) {
+    OC_APP::registerLogIn(array(
+        'href' => $urlGenerator->linkToRoute('useroidc.auth.login', ['provider' => $id]),
+        'name' => $data['displayName'],
+    ));
+}
