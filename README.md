@@ -1,6 +1,26 @@
 # User Oidc
 Place this app in **owncloud/apps/**
 
+Configure your openid connect providers in config.php like this:
+```php
+  'openid_connect' => [
+    'dataporten' => [
+      'displayName' => 'Dataporten',
+      'provider' => 'https://auth.dataporten.no',
+      'client_id' => 'XXXXXX',
+      'client_secret' => 'XXXXXXX',
+      'scopes' => array('openid','email','profile','groups'),
+    ],
+    'google' => [
+      'displayName' => 'Google',
+      'provider' => 'https://accounts.google.com',
+      'client_id' => 'XXXXXX.apps.googleusercontent.com',
+      'client_secret' => 'XXXXXX',
+      'scopes' => array('openid','email','profile'),
+    ]
+  ],
+```
+
 ## Building the app
 
 The app can be built by using the provided Makefile by running:
