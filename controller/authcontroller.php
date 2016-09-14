@@ -41,19 +41,6 @@ class AuthController extends Controller {
         $this->session = $session;
 	}
 
-	/**
-	 * @PublicPage
-     * @NoCSRFRequired
-	 */
-	public function status() {
-		$params = [
-            'provider' => $this->config->getSystemValue('openid_connect')['provider'],
-            'login_url' => $this->urlgenerator->linkToRouteAbsolute('useroidc.auth.login'),
-        ];
-        $this->log->debug($params['provider']);
-		return new TemplateResponse('useroidc', 'main', $params);  // templates/main.php
-	}
-
     /**
      * @PublicPage
      * @NoCSRFRequired
